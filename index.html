@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>הלימה בין מלאי הדיור למאפייני משקי הבית</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#07070D;color:#E8E8F0;font-family:'Segoe UI',Arial,sans-serif;padding:24px 18px;direction:rtl;}
+.wrap{max-width:1040px;margin:0 auto;}
+h1{font-size:17px;font-weight:500;margin-bottom:3px;}
+.sub{font-size:11px;color:#444;margin-bottom:18px;line-height:1.6;}
+/* Area selector */
+.area-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:18px;}
+.abtn{cursor:pointer;padding:9px 6px;border-radius:9px;border:1.5px solid #1E1E28;background:#111118;transition:all .18s;text-align:center;}
+.abtn:hover{border-color:#333;}.abtn.active{background:#0D0D14;}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+/* Main panel */
+.tri{display:grid;grid-template-columns:1fr 108px 1fr;margin-bottom:16px;}
+.pnl{background:#111118;border:1px solid #1E1E28;padding:16px 18px;}
+.pnl-l{border-radius:12px 0 0 12px;}.pnl-r{border-radius:0 12px 12px 0;}
+.pnl-c{background:#0D0D14;border-top:1px solid #1E1E28;border-bottom:1px solid #1E1E28;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 5px;gap:8px;}
+.slbl{font-size:9px;letter-spacing:.12em;color:#555;margin-bottom:10px;font-weight:500;text-transform:uppercase;}
+.ml{font-size:11px;color:#555;margin-bottom:2px;}
+.mv{font-size:22px;font-weight:500;color:#E8E8F0;line-height:1.1;}
+.mu{font-size:10px;color:#444;margin-right:3px;}
+.bt{height:4px;border-radius:2px;background:#1C1C26;overflow:hidden;margin-top:6px;}
+.bf{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.pill{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;}
+/* Charts */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;}
+.cc{background:#111118;border:1px solid #1E1E28;border-radius:11px;padding:14px 16px;}
+.clbl{font-size:9px;letter-spacing:.1em;color:#555;margin-bottom:8px;font-weight:500;text-transform:uppercase;}
+/* Insight */
+.insight{background:#111118;border:1px solid #1E1E28;border-radius:11px;padding:14px 18px;
+  margin-bottom:14px;font-size:12px;color:#888;line-height:1.75;}
+.insight strong{color:#C8C8D8;font-weight:500;}
+.insight .tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:500;margin:0 3px;}
+/* Legend */
+.leg{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:2px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;}
+.ld{width:8px;height:8px;border-radius:2px;display:inline-block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>הלימה בין מלאי הדיור למאפייני משקי הבית לפי אזור סטטיסטי</h1>
+<div class="sub">
+  מפקד 2022 | ד"ר טל מודעי | תהליכים של דיור והתחדשות עירונית<br>
+  <span style="color:#555;">ביקוש = גודל משק הבית + ילודה + גיל &nbsp;|&nbsp; היצע = ממוצע חדרים בדירה &nbsp;|&nbsp; שכירות = מאפיין חזקה המסביר את ההלימה</span>
+</div>
+
+<div class="area-grid" id="areaBtns"></div>
+
+<div class="tri">
+  <!-- LEFT: Demand -->
+  <div class="pnl pnl-l">
+    <div class="slbl">ביקוש – מאפייני משק הבית</div>
+    <div style="margin-bottom:13px;">
+      <div class="ml">גודל משק הבית</div>
+      <div class="mv"><span id="dHh">–</span><span class="mu">נפשות</span></div>
+      <div class="bt"><div class="bf" id="bHh" style="background:#378ADD;width:0"></div></div>
+    </div>
+    <div style="margin-bottom:13px;">
+      <div class="ml">ממוצע ילודה</div>
+      <div class="mv"><span id="dKids">–</span><span class="mu">ילדים לאישה</span></div>
+      <div class="bt"><div class="bf" id="bKids" style="background:#D4537E;width:0"></div></div>
+    </div>
+    <div style="margin-bottom:13px;">
+      <div class="ml">גיל חציוני</div>
+      <div class="mv"><span id="dAge">–</span><span class="mu">שנים</span></div>
+      <div class="bt"><div class="bf" id="bAge" style="background:#1D9E75;width:0"></div></div>
+    </div>
+    <div>
+      <div class="ml">שכירות <span style="font-size:10px;color:#444;">(מאפיין חזקה)</span></div>
+      <div class="mv"><span id="dRent">–</span><span class="mu">%</span></div>
+      <div class="bt"><div class="bf" id="bRent" style="background:#EF9F27;width:0"></div></div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="pnl-c">
+    <div style="font-size:9px;color:#444;letter-spacing:.1em;text-transform:uppercase;">הלימה</div>
+    <div style="position:relative;width:70px;height:70px;">
+      <svg viewBox="0 0 70 70" width="70" height="70">
+        <circle cx="35" cy="35" r="29" fill="none" stroke="#1C1C26" stroke-width="7"/>
+        <circle cx="35" cy="35" r="29" fill="none" stroke-width="7"
+          stroke-dasharray="182.2" stroke-dashoffset="182.2"
+          stroke-linecap="round" transform="rotate(-90 35 35)"
+          id="mRing" style="transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1),stroke .4s;"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <span style="font-size:16px;font-weight:500;" id="mPct">–</span>
+      </div>
+    </div>
+    <div class="pill" id="mLbl" style="background:#1A1A22;color:#444;font-size:10px;padding:3px 10px;">בחר אזור</div>
+    <div style="text-align:center;margin-top:2px;">
+      <div style="font-size:9px;color:#444;">פער חדרים–נפשות</div>
+      <div style="font-size:19px;font-weight:500;" id="gapV">–</div>
+    </div>
+    <div style="text-align:center;font-size:9px;color:#444;" id="tenureNote">–</div>
+  </div>
+
+  <!-- RIGHT: Supply -->
+  <div class="pnl pnl-r">
+    <div class="slbl">היצע – מלאי הדיור</div>
+    <div style="margin-bottom:13px;">
+      <div class="ml">ממוצע חדרים בדירה</div>
+      <div class="mv"><span id="sRooms">–</span><span class="mu">חדרים</span></div>
+      <div class="bt"><div class="bf" id="bRooms" style="background:#7F77DD;width:0"></div></div>
+    </div>
+    <div style="margin-bottom:13px;">
+      <div class="ml">קריירת הדיור</div>
+      <div style="font-size:13px;color:#C8C8D8;margin-top:4px;" id="careerStage">–</div>
+    </div>
+    <div>
+      <div class="ml">צריכת יתר / חסר</div>
+      <div style="font-size:13px;margin-top:5px;line-height:1.5;" id="consumptionNote">–</div>
+    </div>
+  </div>
+</div>
+
+<!-- Two charts -->
+<div class="charts">
+  <div class="cc">
+    <div class="clbl">גרף 1 – ביקוש מול היצע לפי אזור</div>
+    <div style="position:relative;height:220px;">
+      <canvas id="chart1" role="img" aria-label="ביקוש מול היצע">נתונים</canvas>
+    </div>
+  </div>
+  <div class="cc">
+    <div class="clbl">גרף 2 – שכירות % מסביר את ההלימה (ממוין לפי שכירות יורדת)</div>
+    <div style="position:relative;height:220px;">
+      <canvas id="chart2" role="img" aria-label="שכירות מול פער">נתונים</canvas>
+    </div>
+  </div>
+</div>
+
+<div class="leg" style="margin-bottom:12px;">
+  <span class="li"><span class="ld" style="background:#378ADD;"></span>גודל משק בית (ביקוש)</span>
+  <span class="li"><span class="ld" style="background:#7F77DD;"></span>ממוצע חדרים (היצע)</span>
+  <span class="li"><span class="ld" style="background:#D4537E;"></span>ממוצע ילודה</span>
+  <span class="li"><span class="ld" style="background:#EF9F27;"></span>שכירות %</span>
+  <span class="li"><span style="width:22px;height:3px;border-top:2px dashed #D85A30;display:inline-block;"></span>פער חדרים–נפשות</span>
+</div>
+
+<div class="insight" id="insightBox">לחץ על אזור סטטיסטי לניתוח מפורט.</div>
+
+</div>
+
+<script>
+const D=[
+  {l:"הרצליה 133",  hh:2.6,rooms:3.76,kids:1.6,age:35,rent:42.9,c:"#378ADD"},
+  {l:"תל אביב 711", hh:1.8,rooms:2.26,kids:1.0,age:34,rent:75.4,c:"#D85A30"},
+  {l:"תל אביב 816", hh:1.6,rooms:2.41,kids:0.9,age:36,rent:60.7,c:"#7F77DD"},
+  {l:"אשקלון 113",  hh:2.6,rooms:3.78,kids:2.5,age:41,rent:38.7,c:"#1D9E75"},
+  {l:"ירושלים 1142",hh:3.0,rooms:3.43,kids:2.6,age:33,rent:34.1,c:"#D4537E"},
+];
+D.forEach(d=>{ d.gap=+(d.rooms-d.hh).toFixed(2); });
+
+function mScore(d){return d.gap<0.6?95:d.gap<1.0?75:d.gap<1.3?55:35;}
+function mStyle(s){
+  if(s>=85)return{lbl:"הלימה גבוהה",clr:"#1D9E75",bg:"rgba(29,158,117,.15)"};
+  if(s>=65)return{lbl:"הלימה חלקית",clr:"#EF9F27",bg:"rgba(239,159,39,.12)"};
+  return{lbl:"צריכת יתר",clr:"#D85A30",bg:"rgba(216,90,48,.13)"};
+}
+function pct(v,mx){return Math.min(100,v/mx*100).toFixed(1)+"%";}
+
+const CAREER=[
+  "משפחה ותיקה בבעלות – שלב מתקדם בקריירת הדיור",
+  "צעירים / שוכרים – שלב ראשוני, נייד",
+  "צעירים / שוכרים – שלב ראשוני, נייד",
+  "משפחות מבוגרות בבעלות – שלב מתקדם",
+  "משפחות גדולות בבעלות – שלב מתקדם + לחץ דמוגרפי",
+];
+const CONSUMPTION=[
+  '<span style="color:#EF9F27;">צריכת יתר מתונה</span> – דירות גדולות במעט מהצורך',
+  '<span style="color:#1D9E75;">הלימה גבוהה</span> – דירות תואמות לצורך',
+  '<span style="color:#1D9E75;">הלימה גבוהה</span> – דירות תואמות לצורך',
+  '<span style="color:#EF9F27;">צריכת יתר</span> – ילודה גבוהה אך דירות גדולות',
+  '<span style="color:#D85A30;">צריכת יתר</span> – משקי בית גדולים, דירות קטנות יחסית',
+];
+const TENURE_NOTE=[
+  "שכירות בינונית → מעבר לבעלות",
+  "שכירות גבוהה מאוד → ניידות גבוהה",
+  "שכירות גבוהה → ניידות גבוהה",
+  "שכירות נמוכה → יציבות / בעלות",
+  "שכירות נמוכה → בעלות / יציבות",
+];
+const INSIGHTS=[
+  "הרצליה 133 – משפחות בינוניות (2.6 נפשות, ילודה 1.6) עם שכירות בינונית (42.9%). הדירות (3.76 חדרים) גדולות במעט מהצורך → <strong>פער +1.16 = צריכת יתר מתונה</strong>. האזור בשלב מעבר מניידות לבעלות.",
+  "תל אביב 711 – אוכלוסייה צעירה (גיל 34), משקי בית קטנים (1.8), שכירות גבוהה מאוד (75.4%). הדירות (2.26 חדרים) <strong>תואמות את הצורך</strong> → פער +0.46 = הלימה גבוהה. מודל קלאסי של שוכרים בשלב ראשוני בקריירת הדיור.",
+  "תל אביב 816 – פרופיל דומה ל-711, ילודה 0.9 (הנמוכה ביותר), שכירות 60.7%. <strong>הלימה גבוהה</strong> → פער +0.81. הדירות הקטנות מתאימות לאוכלוסייה הצעירה והנוממדית.",
+  "אשקלון 113 – ילודה גבוהה (2.5), גיל מבוגר (41), שכירות נמוכה (38.7%) → אוכלוסייה ותיקה בבעלות. 67.9% מהדירות הן 4 חדרים – גדולות, אך הביקוש גדל עם הילדים → <strong>פער +1.19 = צריכת יתר</strong>.",
+  "ירושלים 1142 – משקי הבית הגדולים ביותר (3.0), ילודה גבוהה (2.6), שכירות נמוכה (34.1%) = ציבור ותיק עם ילדים רבים. הדירות (3.43 חדרים) <strong>אינן מספיקות</strong> → פער +0.43 נראה קטן אך הלחץ הדמוגרפי מצביע על חסר עתידי.",
+];
+
+function render(i){
+  const d=D[i],sc=mScore(d),{lbl,clr,bg}=mStyle(sc);
+  document.getElementById("dHh").textContent   =d.hh.toFixed(1);
+  document.getElementById("dKids").textContent =d.kids.toFixed(1);
+  document.getElementById("dAge").textContent  =d.age;
+  document.getElementById("dRent").textContent =d.rent.toFixed(1);
+  document.getElementById("sRooms").textContent=d.rooms.toFixed(2);
+  document.getElementById("mPct").textContent  =sc+"%";
+  document.getElementById("gapV").textContent  ="+"+ d.gap.toFixed(2);
+  document.getElementById("gapV").style.color  =clr;
+  document.getElementById("bHh").style.width   =pct(d.hh,4);
+  document.getElementById("bKids").style.width =pct(d.kids,3.5);
+  document.getElementById("bAge").style.width  =pct(d.age,50);
+  document.getElementById("bRent").style.width =pct(d.rent,100);
+  document.getElementById("bRooms").style.width=pct(d.rooms,5);
+  const ring=document.getElementById("mRing");
+  ring.style.strokeDashoffset=(182.2*(1-sc/100)).toFixed(1);ring.style.stroke=clr;
+  const pill=document.getElementById("mLbl");
+  pill.textContent=lbl;pill.style.background=bg;pill.style.color=clr;
+  document.getElementById("careerStage").textContent=CAREER[i];
+  document.getElementById("consumptionNote").innerHTML=CONSUMPTION[i];
+  document.getElementById("tenureNote").textContent=TENURE_NOTE[i];
+  document.getElementById("insightBox").innerHTML=INSIGHTS[i];
+
+  // Highlight active in chart1
+  chart1.data.datasets.forEach((ds,di)=>{
+    const isActive=di<3; // bar datasets
+    chart1.data.datasets[0].borderWidth=1.5;
+  });
+  // Highlight active bar in chart1 via dataset border
+  chart1.data.datasets.forEach((_,di)=>{
+    if(di<3) chart1.data.datasets[di].borderWidth=1.5;
+  });
+  chart1.update();
+
+  // Highlight active in chart2
+  chart2.data.datasets[1].data=D2sorted.map(a=>a.gap);
+  chart2.update();
+}
+
+// Area buttons
+const btnsEl=document.getElementById("areaBtns");
+D.forEach((d,i)=>{
+  const btn=document.createElement("div"); btn.className="abtn"; btn.id="btn"+i;
+  btn.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:2px;">
+    <span class="dot" style="background:${d.c};"></span>
+    <span style="font-size:10px;font-weight:500;color:#C8C8D8;">${d.l.split(" ")[0]}</span>
+  </div><div style="font-size:9px;color:#555;">${d.l.split(" ")[1]||""}</div>`;
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".abtn").forEach(b=>{b.classList.remove("active");b.style.borderColor="#1E1E28";});
+    btn.classList.add("active"); btn.style.borderColor=d.c;
+    render(i);
+  });
+  btnsEl.appendChild(btn);
+});
+
+const gc="#1C1C26",tc="#555";
+
+// CHART 1: grouped bar (hh + rooms + kids) + gap line
+const chart1=new Chart(document.getElementById("chart1").getContext("2d"),{
+  type:"bar",
+  data:{
+    labels:D.map(d=>d.l),
+    datasets:[
+      {label:"גודל משק בית (ביקוש)",data:D.map(d=>d.hh),backgroundColor:"#378ADD35",borderColor:"#378ADD",borderWidth:2,borderRadius:3},
+      {label:"ממוצע חדרים (היצע)",  data:D.map(d=>d.rooms), backgroundColor:"#7F77DD35",borderColor:"#7F77DD",borderWidth:2,borderRadius:3},
+      {label:"ממוצע ילודה",          data:D.map(d=>d.kids),  backgroundColor:"#D4537E35",borderColor:"#D4537E",borderWidth:2,borderRadius:3},
+      {type:"line",label:"פער חדרים–נפשות",data:D.map(d=>d.gap),
+       borderColor:"#EF9F27",borderWidth:2.5,borderDash:[6,3],
+       pointBackgroundColor:"#EF9F27",pointBorderColor:"#07070D",pointRadius:7,pointBorderWidth:2,
+       backgroundColor:"transparent",yAxisID:"y2"},
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{rtl:true,backgroundColor:"#111118",borderColor:"#2A2A36",borderWidth:1,
+        titleColor:"#C8C8D8",bodyColor:"#888",
+        callbacks:{title:i=>i[0].label,label:item=>{
+          if(item.dataset.label==="פער חדרים–נפשות") return ` פער: +${item.parsed.y.toFixed(2)}`;
+          return ` ${item.dataset.label}: ${item.parsed.y.toFixed(2)}`;
+        }}}
+    },
+    scales:{
+      x:{ticks:{color:tc,font:{size:10},autoSkip:false},grid:{display:false},border:{color:gc}},
+      y:{min:0,max:5,ticks:{color:tc,font:{size:9},stepSize:1},grid:{color:gc,lineWidth:0.5},
+         border:{color:"transparent"},title:{display:true,text:"נפשות / חדרים / ילודה",color:tc,font:{size:9}}},
+      y2:{position:"right",min:0,max:2,ticks:{color:"#EF9F27",font:{size:9},stepSize:0.5,
+          callback:v=>"+"+v.toFixed(1)},grid:{display:false},
+          title:{display:true,text:"פער",color:"#EF9F27",font:{size:9}}}
+    }
+  }
+});
+
+// CHART 2: rent sorted → gap correlation
+const D2sorted=[...D].sort((a,b)=>b.rent-a.rent);
+const chart2=new Chart(document.getElementById("chart2").getContext("2d"),{
+  type:"bar",
+  data:{
+    labels:D2sorted.map(d=>d.l),
+    datasets:[
+      {label:"שכירות %",data:D2sorted.map(d=>d.rent),
+       backgroundColor:D2sorted.map(d=>d.c+"50"),borderColor:D2sorted.map(d=>d.c),borderWidth:2,borderRadius:3},
+      {type:"line",label:"פער חדרים–נפשות",data:D2sorted.map(d=>d.gap),
+       borderColor:"#D85A30",borderWidth:2.5,
+       pointBackgroundColor:"#D85A30",pointBorderColor:"#07070D",pointRadius:7,pointBorderWidth:2,
+       backgroundColor:"transparent",yAxisID:"y2"},
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{rtl:true,backgroundColor:"#111118",borderColor:"#2A2A36",borderWidth:1,
+        titleColor:"#C8C8D8",bodyColor:"#888",
+        callbacks:{title:i=>i[0].label,label:item=>{
+          if(item.dataset.label==="פער חדרים–נפשות") return ` פער: +${item.parsed.y.toFixed(2)}`;
+          return ` שכירות: ${item.parsed.y.toFixed(1)}%`;
+        }}}
+    },
+    scales:{
+      x:{ticks:{color:tc,font:{size:10},autoSkip:false},grid:{display:false},border:{color:gc}},
+      y:{min:0,max:100,ticks:{color:tc,font:{size:9},stepSize:20,callback:v=>v+"%"},
+         grid:{color:gc,lineWidth:0.5},border:{color:"transparent"},
+         title:{display:true,text:"שכירות %",color:tc,font:{size:9}}},
+      y2:{position:"right",min:0,max:2,ticks:{color:"#D85A30",font:{size:9},stepSize:0.5,
+          callback:v=>"+"+v.toFixed(1)},grid:{display:false},
+          title:{display:true,text:"פער",color:"#D85A30",font:{size:9}}}
+    }
+  }
+});
+
+document.getElementById("btn0").click();
+</script>
+</body>
+</html>
